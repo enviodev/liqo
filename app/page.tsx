@@ -1,103 +1,250 @@
 import Image from "next/image";
+import Link from "next/link";
+import CopyButton from "./components/CopyButton";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+type GeneralizedLiquidation = {
+  id: string;
+  chainId: number;
+  timestamp: string;
+  protocol: string;
+  borrower: string;
+  liquidator: string;
+  txHash: string;
+  collateralAsset?: string | null;
+  debtAsset?: string | null;
+  repaidAssets?: string | null;
+  seizedAssets?: string | null;
+};
+
+type LiquidationStats = {
+  id: string;
+  chainId?: number | null;
+  aaveCount: string;
+  eulerCount: string;
+  morphoCount: string;
+  totalCount: string;
+};
+
+const GRAPHQL_ENDPOINT =
+  process.env.INDEXER_URL ||
+  process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
+  "http://localhost:8080/v1/graphql";
+
+async function fetchRecentLiquidations(
+  limit: number
+): Promise<GeneralizedLiquidation[]> {
+  const query = `
+    query RecentLiquidations($limit: Int!) {
+      GeneralizedLiquidation(limit: $limit, order_by: { timestamp: desc }) {
+        id
+        chainId
+        timestamp
+        protocol
+        borrower
+        liquidator
+        txHash
+        collateralAsset
+        debtAsset
+        repaidAssets
+        seizedAssets
+      }
+    }
+  `;
+
+  const res = await fetch(GRAPHQL_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, variables: { limit } }),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch: ${res.status}`);
+  }
+
+  const json = await res.json();
+  return json.data?.GeneralizedLiquidation ?? [];
+}
+
+async function fetchStats(): Promise<LiquidationStats | null> {
+  const query = `
+    query Stats {
+      LiquidationStats(limit: 1, order_by: { id: desc }) {
+        id
+        chainId
+        aaveCount
+        eulerCount
+        morphoCount
+        totalCount
+      }
+    }
+  `;
+
+  const res = await fetch(GRAPHQL_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+    cache: "no-store",
+  });
+  if (!res.ok) return null;
+  const json = await res.json();
+  return (json.data?.LiquidationStats?.[0] as LiquidationStats) ?? null;
+}
+
+function formatAddress(addr?: string | null, size: number = 6) {
+  if (!addr) return "-";
+  return `${addr.slice(0, 2 + size)}…${addr.slice(-size)}`;
+}
+
+function formatTime(ts: string) {
+  const n = Number(ts);
+  if (!Number.isFinite(n)) return ts;
+  return new Date(n * 1000).toLocaleString();
+}
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const sp = (await searchParams) ?? {};
+  const rawLimit = Array.isArray(sp.limit) ? sp.limit[0] : sp.limit;
+  const limit = Math.max(1, Math.min(100, Number(rawLimit ?? 10))) || 10;
+
+  const [items, stats] = await Promise.all([
+    fetchRecentLiquidations(limit),
+    fetchStats(),
+  ]);
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+    <div className="font-sans min-h-screen p-6 sm:p-10">
+      <header className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+            Liqo
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Cross-protocol liquidation activity
+          </p>
+        </div>
         <Image
           className="dark:invert"
           src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+          alt="Logo"
+          width={120}
+          height={24}
         />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+      </header>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div className="rounded-xl border p-4">
+          <div className="text-xs text-muted-foreground">Total</div>
+          <div className="text-2xl font-medium">{stats?.totalCount ?? "—"}</div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className="rounded-xl border p-4">
+          <div className="text-xs text-muted-foreground">Aave</div>
+          <div className="text-2xl font-medium">{stats?.aaveCount ?? "—"}</div>
+        </div>
+        <div className="rounded-xl border p-4">
+          <div className="text-xs text-muted-foreground">Euler</div>
+          <div className="text-2xl font-medium">{stats?.eulerCount ?? "—"}</div>
+        </div>
+        <div className="rounded-xl border p-4">
+          <div className="text-xs text-muted-foreground">Morpho</div>
+          <div className="text-2xl font-medium">
+            {stats?.morphoCount ?? "—"}
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border">
+        <div className="flex items-center justify-between p-4 border-b gap-2">
+          <h2 className="text-lg font-medium">Recent liquidations</h2>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <span>Showing {items.length}</span>
+            <span className="hidden sm:inline">•</span>
+            <div className="flex gap-1">
+              <Link
+                className="underline-offset-2 hover:underline"
+                href="/?limit=10"
+              >
+                10
+              </Link>
+              <span>/</span>
+              <Link
+                className="underline-offset-2 hover:underline"
+                href="/?limit=25"
+              >
+                25
+              </Link>
+              <span>/</span>
+              <Link
+                className="underline-offset-2 hover:underline"
+                href="/?limit=50"
+              >
+                50
+              </Link>
+              <span>/</span>
+              <Link
+                className="underline-offset-2 hover:underline"
+                href="/?limit=100"
+              >
+                100
+              </Link>
+            </div>
+          </div>
+        </div>
+        <div className="divide-y">
+          {items.length === 0 ? (
+            <div className="p-6 text-sm text-muted-foreground">No data</div>
+          ) : (
+            items.map((x) => (
+              <div
+                key={x.id}
+                className="grid grid-cols-2 sm:grid-cols-7 gap-2 p-4 hover:bg-muted/50"
+              >
+                <div className="text-sm font-medium">{x.protocol}</div>
+                <div className="text-xs text-muted-foreground">
+                  {formatTime(x.timestamp)}
+                </div>
+                <div className="text-xs flex items-center gap-2">
+                  <span>Borrower:</span>
+                  <span className="font-mono">{formatAddress(x.borrower)}</span>
+                  <CopyButton text={x.borrower} ariaLabel="Copy borrower" />
+                </div>
+                <div className="text-xs flex items-center gap-2">
+                  <span>Liquidator:</span>
+                  <span className="font-mono">
+                    {formatAddress(x.liquidator)}
+                  </span>
+                  <CopyButton text={x.liquidator} ariaLabel="Copy liquidator" />
+                </div>
+                <div className="text-xs hidden sm:flex items-center gap-2">
+                  <span>Tx:</span>
+                  <span className="font-mono">
+                    {formatAddress(x.txHash, 8)}
+                  </span>
+                  <CopyButton
+                    text={x.txHash}
+                    ariaLabel="Copy transaction hash"
+                  />
+                </div>
+                <div className="text-xs hidden sm:block">
+                  Collateral:{" "}
+                  <span className="font-mono">
+                    {formatAddress(x.collateralAsset)}
+                  </span>
+                </div>
+                <div className="text-xs hidden sm:block">
+                  Chain: {x.chainId}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
   );
 }

@@ -20,6 +20,20 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Configuration
+
+Set your indexer GraphQL endpoint via environment variables. Create a `.env` file in the project root with:
+
+```
+# Base URL for the indexer GraphQL endpoint
+INDEXER_URL=https://your-indexer.example.com/v1/graphql
+
+# Optional legacy/public override (kept for compatibility)
+# NEXT_PUBLIC_GRAPHQL_ENDPOINT=
+```
+
+The app reads `INDEXER_URL` on the server for data fetching. If not set, it falls back to `NEXT_PUBLIC_GRAPHQL_ENDPOINT`, and finally to `http://localhost:8080/v1/graphql`.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
