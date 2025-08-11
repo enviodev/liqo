@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import CopyButton from "./components/CopyButton";
 
@@ -120,22 +119,15 @@ export default async function Home({
 
   return (
     <div className="font-sans min-h-screen p-6 sm:p-10">
-      <header className="flex items-center justify-between mb-8">
-        <div>
+      <header className="mb-8">
+        <div className="flex flex-col items-center text-center gap-1">
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
             Liqo
           </h1>
           <p className="text-sm text-muted-foreground">
-            Cross-protocol liquidation activity
+            Cross-chain protocol liquidation activity
           </p>
         </div>
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Logo"
-          width={120}
-          height={24}
-        />
       </header>
 
       <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
