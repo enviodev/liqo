@@ -120,7 +120,7 @@ export default async function Home({
   return (
     <div className="font-sans min-h-screen p-6 sm:p-10">
       <header className="mb-8">
-        <div className="flex flex-col items-center text-center gap-1">
+        <div className="flex flex-col items-center text-center gap-1 max-w-5xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
             Liqo
           </h1>
@@ -130,7 +130,7 @@ export default async function Home({
         </div>
       </header>
 
-      <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <section className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8 max-w-5xl mx-auto">
         <div className="rounded-xl border p-4">
           <div className="text-xs text-muted-foreground">Total</div>
           <div className="text-2xl font-medium">{stats?.totalCount ?? "—"}</div>
@@ -151,13 +151,13 @@ export default async function Home({
         </div>
       </section>
 
-      <section className="rounded-2xl border">
+      <section className="rounded-2xl border max-w-5xl mx-auto">
         <div className="flex items-center justify-between p-4 border-b gap-2">
           <h2 className="text-lg font-medium">Recent liquidations</h2>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span>Showing {items.length}</span>
             <span className="hidden sm:inline">•</span>
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               <Link
                 className="underline-offset-2 hover:underline"
                 href="/?limit=10"
@@ -195,7 +195,7 @@ export default async function Home({
             items.map((x) => (
               <div
                 key={x.id}
-                className="grid grid-cols-2 sm:grid-cols-7 gap-2 p-4 hover:bg-muted/50"
+                className="grid grid-cols-1 sm:grid-cols-7 gap-3 p-4 hover:bg-muted/50"
               >
                 <div className="text-sm font-medium">{x.protocol}</div>
                 <div className="text-xs text-muted-foreground">
