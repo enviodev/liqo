@@ -34,7 +34,7 @@ export default function CopyButton({
       aria-label={ariaLabel ?? "Copy"}
       title={ariaLabel ?? "Copy"}
       className={
-        "inline-flex h-6 w-6 items-center justify-center rounded-md border bg-background text-foreground/80 hover:bg-muted transition-colors" +
+        "inline-flex h-6 w-6 items-center justify-center rounded-md border bg-background text-foreground/80 hover:bg-muted transition-colors shrink-0" +
         (className ? ` ${className}` : "")
       }
     >

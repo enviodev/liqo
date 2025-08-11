@@ -201,21 +201,23 @@ export default async function Home({
                 <div className="text-xs text-muted-foreground">
                   {formatTime(x.timestamp)}
                 </div>
-                <div className="text-xs flex items-center gap-2">
-                  <span>Borrower:</span>
-                  <span className="font-mono">{formatAddress(x.borrower)}</span>
+                <div className="text-xs flex items-center gap-2 min-w-0">
+                  <span className="shrink-0">Borrower:</span>
+                  <span className="font-mono truncate max-w-[160px] sm:max-w-[220px]">
+                    {formatAddress(x.borrower)}
+                  </span>
                   <CopyButton text={x.borrower} ariaLabel="Copy borrower" />
                 </div>
-                <div className="text-xs flex items-center gap-2">
-                  <span>Liquidator:</span>
-                  <span className="font-mono">
+                <div className="text-xs flex items-center gap-2 min-w-0">
+                  <span className="shrink-0">Liquidator:</span>
+                  <span className="font-mono truncate max-w-[160px] sm:max-w-[220px]">
                     {formatAddress(x.liquidator)}
                   </span>
                   <CopyButton text={x.liquidator} ariaLabel="Copy liquidator" />
                 </div>
-                <div className="text-xs hidden sm:flex items-center gap-2">
-                  <span>Tx:</span>
-                  <span className="font-mono">
+                <div className="text-xs hidden sm:flex items-center gap-2 min-w-0">
+                  <span className="shrink-0">Tx:</span>
+                  <span className="font-mono truncate max-w-[240px]">
                     {formatAddress(x.txHash, 8)}
                   </span>
                   <CopyButton

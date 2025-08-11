@@ -76,6 +76,11 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Aurora glow colors (light, pastel but vivid) */
+  --aurora-1: oklch(0.985 0.06 240 / 0.95); /* sky */
+  --aurora-2: oklch(0.99 0.055 320 / 0.88); /* lilac */
+  --aurora-3: oklch(0.995 0.07 85 / 0.9); /* peach */
 }
 
 .dark {
@@ -110,6 +115,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Aurora glow colors (dark) */
+  --aurora-1: oklch(0.76 0.2 240 / 0.78);
+  --aurora-2: oklch(0.72 0.16 320 / 0.7);
+  --aurora-3: oklch(0.8 0.2 85 / 0.68);
 }
 
 @layer base {
@@ -119,4 +129,27 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Minimal aurora background inspired by lovable.dev */
+.bg-aurora {
+  background-color: var(--background);
+  background-image:
+    /* top crown */ radial-gradient(
+      160% 110% at 50% -25%,
+      var(--aurora-1),
+      transparent 72%
+    ),
+    /* right base */
+      radial-gradient(150% 130% at 120% 120%, var(--aurora-2), transparent 68%),
+    /* left base */
+      radial-gradient(150% 130% at -20% 120%, var(--aurora-3), transparent 68%),
+    /* central lift */
+      radial-gradient(
+        220% 160% at 50% 75%,
+        oklch(0.998 0 0 / 0.5),
+        transparent 90%
+      );
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
