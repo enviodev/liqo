@@ -188,55 +188,79 @@ export default async function Home({
             </div>
           </div>
         </div>
-        <div className="divide-y">
-          {items.length === 0 ? (
-            <div className="p-6 text-sm text-muted-foreground">No data</div>
-          ) : (
-            items.map((x) => (
-              <div
-                key={x.id}
-                className="grid grid-cols-1 sm:grid-cols-7 gap-3 p-4 hover:bg-muted/50"
-              >
-                <div className="text-sm font-medium">{x.protocol}</div>
-                <div className="text-xs text-muted-foreground">
-                  {formatTime(x.timestamp)}
-                </div>
-                <div className="text-xs flex items-center gap-2 min-w-0">
-                  <span className="shrink-0">Borrower:</span>
-                  <span className="font-mono truncate max-w-[160px] sm:max-w-[220px]">
-                    {formatAddress(x.borrower)}
-                  </span>
-                  <CopyButton text={x.borrower} ariaLabel="Copy borrower" />
-                </div>
-                <div className="text-xs flex items-center gap-2 min-w-0">
-                  <span className="shrink-0">Liquidator:</span>
-                  <span className="font-mono truncate max-w-[160px] sm:max-w-[220px]">
-                    {formatAddress(x.liquidator)}
-                  </span>
-                  <CopyButton text={x.liquidator} ariaLabel="Copy liquidator" />
-                </div>
-                <div className="text-xs hidden sm:flex items-center gap-2 min-w-0">
-                  <span className="shrink-0">Tx:</span>
-                  <span className="font-mono truncate max-w-[240px]">
-                    {formatAddress(x.txHash, 8)}
-                  </span>
-                  <CopyButton
-                    text={x.txHash}
-                    ariaLabel="Copy transaction hash"
-                  />
-                </div>
-                <div className="text-xs hidden sm:block">
-                  Collateral:{" "}
-                  <span className="font-mono">
-                    {formatAddress(x.collateralAsset)}
-                  </span>
-                </div>
-                <div className="text-xs hidden sm:block">
-                  Chain: {x.chainId}
-                </div>
-              </div>
-            ))
-          )}
+        <div className="overflow-x-auto">
+          <div className="min-w-[1040px]">
+            <div className="grid grid-cols-7 gap-2 px-4 py-2 text-[11px] font-medium text-muted-foreground">
+              <div className="w-[160px]">Date</div>
+              <div className="w-[90px]">Protocol</div>
+              <div>Borrower</div>
+              <div>Liquidator</div>
+              <div>Tx</div>
+              <div>Collateral</div>
+              <div className="w-[64px] text-right">Chain</div>
+            </div>
+            <div className="divide-y">
+              {items.length === 0 ? (
+                <div className="p-6 text-sm text-muted-foreground">No data</div>
+              ) : (
+                items.map((x) => (
+                  <div
+                    key={x.id}
+                    className="grid grid-cols-7 gap-2 p-4 hover:bg-muted/50 items-center"
+                  >
+                    <div className="text-xs text-muted-foreground whitespace-nowrap w-[160px]">
+                      {formatTime(x.timestamp)}
+                    </div>
+                    <div className="text-sm font-medium w-[90px] whitespace-nowrap">
+                      {x.protocol}
+                    </div>
+                    <div className="text-xs flex items-center gap-2 min-w-0">
+                      <span className="font-mono truncate max-w-[220px]">
+                        {formatAddress(x.borrower)}
+                      </span>
+                      <CopyButton text={x.borrower} ariaLabel="Copy borrower" />
+                    </div>
+                    <div className="text-xs flex items-center gap-2 min-w-0">
+                      <span className="font-mono truncate max-w-[220px]">
+                        {formatAddress(x.liquidator)}
+                      </span>
+                      <CopyButton
+                        text={x.liquidator}
+                        ariaLabel="Copy liquidator"
+                      />
+                    </div>
+                    <div className="text-xs flex items-center gap-2 min-w-0">
+                      <span className="font-mono truncate max-w-[240px]">
+                        {formatAddress(x.txHash, 8)}
+                      </span>
+                      <CopyButton
+                        text={x.txHash}
+                        ariaLabel="Copy transaction hash"
+                      />
+                    </div>
+                    <div className="text-xs flex items-center gap-2 min-w-0">
+                      {x.collateralAsset ? (
+                        <>
+                          <span className="font-mono truncate max-w-[220px]">
+                            {formatAddress(x.collateralAsset)}
+                          </span>
+                          <CopyButton
+                            text={x.collateralAsset}
+                            ariaLabel="Copy collateral"
+                          />
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </div>
+                    <div className="text-xs text-right w-[64px] whitespace-nowrap">
+                      {x.chainId}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </section>
     </div>
