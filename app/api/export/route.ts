@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
@@ -6,6 +7,8 @@ const INDEXER_URL =
   process.env.INDEXER_URL ||
   process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
   "http://localhost:8080/v1/graphql";
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 function isValidEmail(email: string | null | undefined): boolean {
   if (!email) return false;
@@ -86,6 +89,45 @@ export async function GET(req: NextRequest) {
         { error: "Valid email is required" },
         { status: 400 }
       );
+    }
+
+    // Email capture via Supabase
+
+    // Supabase capture (awaited to ensure it isn't dropped by serverless teardown)
+    if (SUPABASE_URL && SUPABASE_SERVICE_KEY && email) {
+      try {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        });
+        const row = {
+          email,
+          limit,
+          timestamp: new Date().toISOString(),
+        } as const;
+        const { error } = await supabase.from("liqo_emails").insert(row);
+        if (error) {
+          console.error(
+            JSON.stringify({
+              type: "supabase_email_insert_error",
+              message: error.message,
+              details: (error as any).details ?? null,
+              hint: (error as any).hint ?? null,
+              code: (error as any).code ?? null,
+            })
+          );
+        } else {
+          console.log(
+            JSON.stringify({ type: "supabase_email_insert_ok", email })
+          );
+        }
+      } catch (e) {
+        console.error(
+          JSON.stringify({
+            type: "supabase_email_insert_exception",
+            error: String(e),
+          })
+        );
+      }
     }
 
     const query = `
