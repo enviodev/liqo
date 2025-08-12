@@ -1,5 +1,6 @@
 import Link from "next/link";
 import RecentLiquidations from "./components/RecentLiquidations";
+import DownloadCsv from "./components/DownloadCsv";
 
 export const dynamic = "force-dynamic";
 
@@ -120,7 +121,7 @@ export default async function Home({
             Liqo
           </h1>
           <p className="text-sm text-muted-foreground">
-            Cross-chain protocol liquidation activity
+            Hub for all onchain liquidations
           </p>
         </div>
       </header>
@@ -149,37 +150,40 @@ export default async function Home({
       <section className="rounded-2xl border max-w-5xl mx-auto">
         <div className="flex items-center justify-between p-4 border-b gap-2">
           <h2 className="text-lg font-medium">Recent liquidations</h2>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span>Showing {items.length}</span>
-            <span className="hidden sm:inline">•</span>
-            <div className="flex gap-2">
-              <Link
-                className="underline-offset-2 hover:underline"
-                href="/?limit=10"
-              >
-                10
-              </Link>
-              <span>/</span>
-              <Link
-                className="underline-offset-2 hover:underline"
-                href="/?limit=25"
-              >
-                25
-              </Link>
-              <span>/</span>
-              <Link
-                className="underline-offset-2 hover:underline"
-                href="/?limit=50"
-              >
-                50
-              </Link>
-              <span>/</span>
-              <Link
-                className="underline-offset-2 hover:underline"
-                href="/?limit=100"
-              >
-                100
-              </Link>
+          <div className="flex items-center gap-3">
+            <DownloadCsv defaultLimit={1000} />
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>Showing {items.length}</span>
+              <span className="hidden sm:inline">•</span>
+              <div className="flex gap-2">
+                <Link
+                  className="underline-offset-2 hover:underline"
+                  href="/?limit=10"
+                >
+                  10
+                </Link>
+                <span>/</span>
+                <Link
+                  className="underline-offset-2 hover:underline"
+                  href="/?limit=25"
+                >
+                  25
+                </Link>
+                <span>/</span>
+                <Link
+                  className="underline-offset-2 hover:underline"
+                  href="/?limit=50"
+                >
+                  50
+                </Link>
+                <span>/</span>
+                <Link
+                  className="underline-offset-2 hover:underline"
+                  href="/?limit=100"
+                >
+                  100
+                </Link>
+              </div>
             </div>
           </div>
         </div>
