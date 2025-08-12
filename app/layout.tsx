@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: " liquidations",
+  title: "Liqo",
   description: "Cross-protocol liquidation activity across chains",
 };
 
