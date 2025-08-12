@@ -28,7 +28,20 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-aurora`}
       >
-        {children}
+        <div className="min-h-dvh flex flex-col">
+          <main className="flex-1">{children}</main>
+          <footer className="border-t py-6 text-center text-[11px] text-muted-foreground">
+            Powered by{" "}
+            <a
+              href="https://envio.dev"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="underline-offset-2 hover:underline"
+            >
+              envio.dev
+            </a>
+          </footer>
+        </div>
         <Analytics />
       </body>
     </html>

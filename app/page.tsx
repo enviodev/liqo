@@ -114,7 +114,7 @@ export default async function Home({
   ]);
 
   return (
-    <div className="font-sans min-h-screen p-6 sm:p-10">
+    <div className="font-sans p-6 sm:p-10">
       <header className="mb-8">
         <div className="flex flex-col items-center text-center gap-1 max-w-5xl mx-auto">
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
