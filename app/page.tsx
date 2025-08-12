@@ -1,5 +1,5 @@
 import Link from "next/link";
-import CopyButton from "./components/CopyButton";
+import RecentLiquidations from "./components/RecentLiquidations";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +26,7 @@ type LiquidationStats = {
   totalCount: string;
 };
 
+// Server uses upstream directly (hidden from clients); client polls via /api/graphql
 const GRAPHQL_ENDPOINT =
   process.env.INDEXER_URL ||
   process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
@@ -92,16 +93,7 @@ async function fetchStats(): Promise<LiquidationStats | null> {
   return (json.data?.LiquidationStats?.[0] as LiquidationStats) ?? null;
 }
 
-function formatAddress(addr?: string | null, size: number = 6) {
-  if (!addr) return "-";
-  return `${addr.slice(0, 2 + size)}…${addr.slice(-size)}`;
-}
-
-function formatTime(ts: string) {
-  const n = Number(ts);
-  if (!Number.isFinite(n)) return ts;
-  return new Date(n * 1000).toLocaleString();
-}
+// formatting helpers moved into the client component
 
 export default async function Home({
   searchParams,
@@ -188,80 +180,7 @@ export default async function Home({
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <div className="w-full">
-            <div className="grid grid-cols-7 gap-1 px-4 py-2 text-[11px] font-medium text-muted-foreground">
-              <div className="w-[160px]">Date</div>
-              <div className="w-[72px]">Protocol</div>
-              <div>Borrower</div>
-              <div>Liquidator</div>
-              <div>Tx</div>
-              <div>Collateral</div>
-              <div className="w-[64px] text-right">Chain</div>
-            </div>
-            <div className="divide-y">
-              {items.length === 0 ? (
-                <div className="p-6 text-sm text-muted-foreground">No data</div>
-              ) : (
-                items.map((x) => (
-                  <div
-                    key={x.id}
-                    className="grid grid-cols-7 gap-1 p-4 hover:bg-muted/50 items-center"
-                  >
-                    <div className="text-xs text-muted-foreground whitespace-nowrap w-[160px]">
-                      {formatTime(x.timestamp)}
-                    </div>
-                    <div className="text-sm font-medium w-[72px] whitespace-nowrap">
-                      {x.protocol}
-                    </div>
-                    <div className="text-xs flex items-center gap-2 min-w-0">
-                      <span className="font-mono whitespace-nowrap overflow-hidden max-w-[200px]">
-                        {formatAddress(x.borrower, 4)}
-                      </span>
-                      <CopyButton text={x.borrower} ariaLabel="Copy borrower" />
-                    </div>
-                    <div className="text-xs flex items-center gap-2 min-w-0">
-                      <span className="font-mono whitespace-nowrap overflow-hidden max-w-[200px]">
-                        {formatAddress(x.liquidator, 4)}
-                      </span>
-                      <CopyButton
-                        text={x.liquidator}
-                        ariaLabel="Copy liquidator"
-                      />
-                    </div>
-                    <div className="text-xs flex items-center gap-2 min-w-0">
-                      <span className="font-mono whitespace-nowrap overflow-hidden max-w-[280px]">
-                        {formatAddress(x.txHash, 4)}
-                      </span>
-                      <CopyButton
-                        text={x.txHash}
-                        ariaLabel="Copy transaction hash"
-                      />
-                    </div>
-                    <div className="text-xs flex items-center gap-2 min-w-0">
-                      {x.collateralAsset ? (
-                        <>
-                          <span className="font-mono whitespace-nowrap overflow-hidden max-w-[200px]">
-                            {formatAddress(x.collateralAsset, 4)}
-                          </span>
-                          <CopyButton
-                            text={x.collateralAsset}
-                            ariaLabel="Copy collateral"
-                          />
-                        </>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </div>
-                    <div className="text-xs text-right w-[64px] whitespace-nowrap">
-                      {x.chainId}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
+        <RecentLiquidations initialItems={items} limit={limit} pollMs={5000} />
       </section>
     </div>
   );
