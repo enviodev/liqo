@@ -52,20 +52,19 @@ async function fetchRecentLiquidations(
       }
     }
   `;
-
-  const res = await fetch(GRAPHQL_ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, variables: { limit } }),
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    throw new Error(`Failed to fetch: ${res.status}`);
+  try {
+    const res = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, variables: { limit } }),
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data?.GeneralizedLiquidation ?? [];
+  } catch {
+    return [];
   }
-
-  const json = await res.json();
-  return json.data?.GeneralizedLiquidation ?? [];
 }
 
 async function fetchStats(): Promise<LiquidationStats | null> {
@@ -82,15 +81,19 @@ async function fetchStats(): Promise<LiquidationStats | null> {
     }
   `;
 
-  const res = await fetch(GRAPHQL_ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query }),
-    cache: "no-store",
-  });
-  if (!res.ok) return null;
-  const json = await res.json();
-  return (json.data?.LiquidationStats?.[0] as LiquidationStats) ?? null;
+  try {
+    const res = await fetch(GRAPHQL_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query }),
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return (json.data?.LiquidationStats?.[0] as LiquidationStats) ?? null;
+  } catch {
+    return null;
+  }
 }
 
 // formatting helpers moved into the client component
