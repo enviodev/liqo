@@ -40,7 +40,6 @@ export default function DownloadCsv({ defaultLimit = 1000, className }: Props) {
       setIsBusy(true);
       const res = await fetch(href, { method: "GET" });
       if (!res.ok) {
-        // eslint-disable-next-line no-alert
         alert("Failed to generate CSV. Please try again.");
         return;
       }

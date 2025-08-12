@@ -110,9 +110,18 @@ export async function GET(req: NextRequest) {
             JSON.stringify({
               type: "supabase_email_insert_error",
               message: error.message,
-              details: (error as any).details ?? null,
-              hint: (error as any).hint ?? null,
-              code: (error as any).code ?? null,
+              details:
+                ("details" in error
+                  ? (error as { details?: string }).details
+                  : undefined) ?? null,
+              hint:
+                ("hint" in error
+                  ? (error as { hint?: string }).hint
+                  : undefined) ?? null,
+              code:
+                ("code" in error
+                  ? (error as { code?: string }).code
+                  : undefined) ?? null,
             })
           );
         } else {
