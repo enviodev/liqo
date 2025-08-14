@@ -1,21 +1,58 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import CopyButton from "./CopyButton";
+import { useId, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFacetedUniqueValues,
+  getFilteredRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+  VisibilityState,
+} from "@tanstack/react-table";
+import {
+  ChevronDownIcon,
+  ChevronUpIcon,
+  CircleXIcon,
+  FilterIcon,
+  ListFilterIcon,
+} from "lucide-react";
 
-type GeneralizedLiquidation = {
-  id: string;
-  chainId: number;
-  timestamp: string;
-  protocol: string;
-  borrower: string;
-  liquidator: string;
-  txHash: string;
-  collateralAsset?: string | null;
-  debtAsset?: string | null;
-  repaidAssets?: string | null;
-  seizedAssets?: string | null;
-};
+import { cn } from "@/lib/utils";
+import { getChainName } from "@/lib/network";
+
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+import { GeneralizedLiquidation } from "@/types";
+import { useLiquidationsData } from "@/hooks/useLiquidationsData";
+import DownloadCsv from "./DownloadCsv";
+import { columns } from "./Columns";
 
 type Props = {
   initialItems: GeneralizedLiquidation[];
@@ -23,160 +60,426 @@ type Props = {
   pollMs?: number;
 };
 
-// Client calls internal proxy route so the upstream INDEXER_URL is never exposed
-const GRAPHQL_ENDPOINT = "/api/graphql";
-
-function formatAddress(addr?: string | null, size: number = 6) {
-  if (!addr) return "-";
-  return `${addr.slice(0, 2 + size)}…${addr.slice(-size)}`;
-}
-
-function formatTime(ts: string) {
-  const n = Number(ts);
-  if (!Number.isFinite(n)) return ts;
-  return new Date(n * 1000).toLocaleString();
-}
-
 export default function RecentLiquidations({
   initialItems,
   limit,
   pollMs = 5000,
 }: Props) {
-  const [items, setItems] = useState<GeneralizedLiquidation[]>(initialItems);
-  const isFetchingRef = useRef(false);
+  const id = useId();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data } = useLiquidationsData({
+    initialItems,
+    limit,
+    pollMs,
+  });
 
-  const query = useMemo(
-    () => `
-    query RecentLiquidations($limit: Int!) {
-      GeneralizedLiquidation(limit: $limit, order_by: { timestamp: desc }) {
-        id
-        chainId
-        timestamp
-        protocol
-        borrower
-        liquidator
-        txHash
-        collateralAsset
-        debtAsset
-        repaidAssets
-        seizedAssets
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [pageSize, setPageSize] = useState(limit);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "timestamp",
+      desc: true,
+    },
+  ]);
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: setSorting,
+    enableSortingRemoval: false,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    getFilteredRowModel: getFilteredRowModel(),
+    getFacetedUniqueValues: getFacetedUniqueValues(),
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+    },
+  });
+
+  // Get unique protocol values
+  const uniqueProtocolValues = useMemo(() => {
+    const protocolColumn = table.getColumn("protocol");
+    if (!protocolColumn) return [];
+    const values = Array.from(protocolColumn.getFacetedUniqueValues().keys());
+    return values.sort();
+  }, [table.getColumn("protocol")?.getFacetedUniqueValues()]);
+
+  // Get counts for each protocol
+  const protocolCounts = useMemo(() => {
+    const protocolColumn = table.getColumn("protocol");
+    if (!protocolColumn) return new Map();
+    return protocolColumn.getFacetedUniqueValues();
+  }, [table.getColumn("protocol")?.getFacetedUniqueValues()]);
+
+  // Get unique chain values
+  const uniqueChainValues = useMemo(() => {
+    const chainColumn = table.getColumn("chainId");
+    if (!chainColumn) return [];
+    const values = Array.from(chainColumn.getFacetedUniqueValues().keys());
+    return values.sort((a, b) => Number(a) - Number(b));
+  }, [table.getColumn("chainId")?.getFacetedUniqueValues()]);
+
+  // Get counts for each chain
+  const chainCounts = useMemo(() => {
+    const chainColumn = table.getColumn("chainId");
+    if (!chainColumn) return new Map();
+    return chainColumn.getFacetedUniqueValues();
+  }, [table.getColumn("chainId")?.getFacetedUniqueValues()]);
+
+  const selectedProtocols = useMemo(() => {
+    const filterValue = table
+      .getColumn("protocol")
+      ?.getFilterValue() as string[];
+    return filterValue ?? [];
+  }, [table.getColumn("protocol")?.getFilterValue()]);
+
+  const selectedChains = useMemo(() => {
+    const filterValue = table
+      .getColumn("chainId")
+      ?.getFilterValue() as number[];
+    return filterValue ?? [];
+  }, [table.getColumn("chainId")?.getFilterValue()]);
+
+  const handleProtocolChange = (checked: boolean, value: string) => {
+    const filterValue = table
+      .getColumn("protocol")
+      ?.getFilterValue() as string[];
+    const newFilterValue = filterValue ? [...filterValue] : [];
+
+    if (checked) {
+      newFilterValue.push(value);
+    } else {
+      const index = newFilterValue.indexOf(value);
+      if (index > -1) {
+        newFilterValue.splice(index, 1);
       }
     }
-  `,
-    []
-  );
 
-  useEffect(() => {
-    let aborted = false;
+    table
+      .getColumn("protocol")
+      ?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
+  };
 
-    async function poll() {
-      if (isFetchingRef.current) return;
-      isFetchingRef.current = true;
-      try {
-        const res = await fetch(GRAPHQL_ENDPOINT, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query, variables: { limit } }),
-          cache: "no-store",
-        });
-        if (!res.ok) return;
-        const json = await res.json();
-        const latest: GeneralizedLiquidation[] =
-          json.data?.GeneralizedLiquidation ?? [];
+  const handleChainChange = (checked: boolean, value: number) => {
+    const filterValue = table
+      .getColumn("chainId")
+      ?.getFilterValue() as number[];
+    const newFilterValue = filterValue ? [...filterValue] : [];
 
-        if (aborted) return;
-        // Update if anything changed (compare first id/length)
-        const hasChange =
-          latest.length !== items.length ||
-          (latest[0]?.id && latest[0]?.id !== items[0]?.id);
-        if (hasChange) setItems(latest);
-      } catch {
-        // ignore
-      } finally {
-        isFetchingRef.current = false;
+    if (checked) {
+      newFilterValue.push(value);
+    } else {
+      const index = newFilterValue.indexOf(value);
+      if (index > -1) {
+        newFilterValue.splice(index, 1);
       }
     }
 
-    // Kick off immediately, then poll
-    poll();
-    const id = window.setInterval(poll, pollMs);
+    table
+      .getColumn("chainId")
+      ?.setFilterValue(newFilterValue.length ? newFilterValue : undefined);
+  };
 
-    return () => {
-      aborted = true;
-      window.clearInterval(id);
-    };
-  }, [limit, pollMs, query, items]);
+  const updateUrlLimit = (newLimit: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("limit", newLimit.toString());
+    router.push(`?${params.toString()}`);
+  };
 
   return (
-    <div className="overflow-x-auto">
-      <div className="w-full">
-        <div className="grid grid-cols-7 gap-1 px-4 py-2 text-[11px] font-medium text-muted-foreground">
-          <div className="w-[160px]">Date</div>
-          <div className="w-[72px]">Protocol</div>
-          <div>Borrower</div>
-          <div>Liquidator</div>
-          <div>Tx</div>
-          <div>Collateral</div>
-          <div className="w-[64px] text-right">Chain</div>
-        </div>
-        <div className="divide-y">
-          {items.length === 0 ? (
-            <div className="p-6 text-sm text-muted-foreground">No data</div>
-          ) : (
-            items.map((x) => (
-              <div
-                key={x.id}
-                className="grid grid-cols-7 gap-1 p-4 hover:bg-muted/50 items-center"
-              >
-                <div className="text-xs text-muted-foreground whitespace-nowrap w-[160px]">
-                  {formatTime(x.timestamp)}
-                </div>
-                <div className="text-sm font-medium w-[72px] whitespace-nowrap">
-                  {x.protocol}
-                </div>
-                <div className="text-xs flex items-center gap-2 min-w-0">
-                  <span className="font-mono whitespace-nowrap overflow-hidden max-w-[200px]">
-                    {formatAddress(x.borrower, 4)}
-                  </span>
-                  <CopyButton text={x.borrower} ariaLabel="Copy borrower" />
-                </div>
-                <div className="text-xs flex items-center gap-2 min-w-0">
-                  <span className="font-mono whitespace-nowrap overflow-hidden max-w-[200px]">
-                    {formatAddress(x.liquidator, 4)}
-                  </span>
-                  <CopyButton text={x.liquidator} ariaLabel="Copy liquidator" />
-                </div>
-                <div className="text-xs flex items-center gap-2 min-w-0">
-                  <span className="font-mono whitespace-nowrap overflow-hidden max-w-[280px]">
-                    {formatAddress(x.txHash, 4)}
-                  </span>
-                  <CopyButton
-                    text={x.txHash}
-                    ariaLabel="Copy transaction hash"
-                  />
-                </div>
-                <div className="text-xs flex items-center gap-2 min-w-0">
-                  {x.collateralAsset ? (
-                    <>
-                      <span className="font-mono whitespace-nowrap overflow-hidden max-w-[200px]">
-                        {formatAddress(x.collateralAsset, 4)}
-                      </span>
-                      <CopyButton
-                        text={x.collateralAsset}
-                        ariaLabel="Copy collateral"
-                      />
-                    </>
-                  ) : (
-                    <span className="text-muted-foreground">-</span>
-                  )}
-                </div>
-                <div className="text-xs text-right w-[64px] whitespace-nowrap">
-                  {x.chainId}
-                </div>
+    <div className=" space-y-4">
+      {/* Filters */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex justify-between w-full">
+          {/* Filter by address, protocol, or tx hash */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Input
+                id={`${id}-input`}
+                ref={inputRef}
+                className={cn(
+                  "peer min-w-60 ps-9",
+                  Boolean(table.getColumn("borrower")?.getFilterValue()) &&
+                    "pe-9"
+                )}
+                value={
+                  (table.getColumn("borrower")?.getFilterValue() ??
+                    "") as string
+                }
+                onChange={(e) =>
+                  table.getColumn("borrower")?.setFilterValue(e.target.value)
+                }
+                placeholder="Filter by address, protocol, or tx hash..."
+                type="text"
+                aria-label="Filter liquidations"
+              />
+              <div className="text-muted-foreground/80 pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 peer-disabled:opacity-50">
+                <ListFilterIcon size={16} aria-hidden="true" />
               </div>
-            ))
-          )}
+              {Boolean(table.getColumn("borrower")?.getFilterValue()) && (
+                <button
+                  className="text-muted-foreground/80 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e transition-[color,box-shadow] outline-none focus:z-10 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
+                  aria-label="Clear filter"
+                  onClick={() => {
+                    table.getColumn("borrower")?.setFilterValue("");
+                    if (inputRef.current) {
+                      inputRef.current.focus();
+                    }
+                  }}
+                >
+                  <CircleXIcon size={16} aria-hidden="true" />
+                </button>
+              )}
+            </div>
+
+            {/* Filter by protocol */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  <FilterIcon
+                    className="-ms-1 opacity-60"
+                    size={16}
+                    aria-hidden="true"
+                  />
+                  Protocol
+                  {selectedProtocols.length > 0 && (
+                    <span className="bg-background text-muted-foreground/70 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
+                      {selectedProtocols.length}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto min-w-36 p-3" align="start">
+                <div className="space-y-3">
+                  <div className="text-muted-foreground text-xs font-medium">
+                    Filter by Protocol
+                  </div>
+                  <div className="space-y-3">
+                    {uniqueProtocolValues.map((value, i) => (
+                      <div key={value} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`${id}-protocol-${i}`}
+                          checked={selectedProtocols.includes(value)}
+                          onCheckedChange={(checked: boolean) =>
+                            handleProtocolChange(checked, value)
+                          }
+                        />
+                        <Label
+                          htmlFor={`${id}-protocol-${i}`}
+                          className="flex grow justify-between gap-2 font-normal"
+                        >
+                          {value}{" "}
+                          <span className="text-muted-foreground ms-2 text-xs">
+                            {protocolCounts.get(value)}
+                          </span>
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Filter by chain */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  <FilterIcon
+                    className="-ms-1 opacity-60"
+                    size={16}
+                    aria-hidden="true"
+                  />
+                  Chain
+                  {selectedChains.length > 0 && (
+                    <span className="bg-background text-muted-foreground/70 -me-1 inline-flex h-5 max-h-full items-center rounded border px-1 font-[inherit] text-[0.625rem] font-medium">
+                      {selectedChains.length}
+                    </span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto min-w-36 p-3" align="start">
+                <div className="space-y-3">
+                  <div className="text-muted-foreground text-xs font-medium">
+                    Filter by Chain
+                  </div>
+                  <div className="space-y-3">
+                    {uniqueChainValues.map((value, i) => (
+                      <div key={value} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`${id}-chain-${i}`}
+                          checked={selectedChains.includes(Number(value))}
+                          onCheckedChange={(checked: boolean) =>
+                            handleChainChange(checked, Number(value))
+                          }
+                        />
+                        <Label
+                          htmlFor={`${id}-chain-${i}`}
+                          className="flex grow justify-between gap-2 font-normal"
+                        >
+                          {getChainName(Number(value))}{" "}
+                          <span className="text-muted-foreground ms-2 text-xs">
+                            {chainCounts.get(value)}
+                          </span>
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="flex items-center gap-4">
+            {/* Results per page */}
+            <div className="flex items-center gap-3">
+              <Label htmlFor={id} className="max-sm:sr-only">
+                Results per page
+              </Label>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(value) => {
+                  const newPageSize = Number(value);
+                  setPageSize(newPageSize);
+                  updateUrlLimit(newPageSize);
+                }}
+              >
+                <SelectTrigger id={id} className="w-fit whitespace-nowrap">
+                  <SelectValue placeholder="Select number of results" />
+                </SelectTrigger>
+                <SelectContent className="[&_*[role=option]]:ps-2 [&_*[role=option]]:pe-8 [&_*[role=option]>span]:start-auto [&_*[role=option]>span]:end-2">
+                  {[5, 10, 25, 50, 100].map((pageSizeOption) => (
+                    <SelectItem
+                      key={pageSizeOption}
+                      value={pageSizeOption.toString()}
+                    >
+                      {pageSizeOption}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Total results count */}
+            <div className="text-muted-foreground text-sm whitespace-nowrap">
+              <p
+                className="text-muted-foreground text-sm whitespace-nowrap"
+                aria-live="polite"
+              >
+                Showing{" "}
+                <span className="text-foreground">
+                  {table.getRowCount().toString()}
+                </span>{" "}
+                results
+              </p>
+            </div>
+            <DownloadCsv defaultLimit={1000} />
+          </div>
         </div>
+      </div>
+
+      {/* Table */}
+      <div className=" overflow-hidden  border rounded">
+        <Table className="table-fixed p-1">
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow
+                key={headerGroup.id}
+                className="hover:bg-transparent bg-muted/50"
+              >
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead
+                      key={header.id}
+                      style={{ width: `${header.getSize()}px` }}
+                      className="h-12 px-3  uppercase font-mono font-normal"
+                    >
+                      {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                        <div
+                          className={cn(
+                            header.column.getCanSort() &&
+                              "flex h-full cursor-pointer items-center justify-between gap-2 select-none"
+                          )}
+                          onClick={header.column.getToggleSortingHandler()}
+                          onKeyDown={(e) => {
+                            if (
+                              header.column.getCanSort() &&
+                              (e.key === "Enter" || e.key === " ")
+                            ) {
+                              e.preventDefault();
+                              header.column.getToggleSortingHandler()?.(e);
+                            }
+                          }}
+                          tabIndex={header.column.getCanSort() ? 0 : undefined}
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          {{
+                            asc: (
+                              <ChevronUpIcon
+                                className="shrink-0 opacity-60"
+                                size={16}
+                                aria-hidden="true"
+                              />
+                            ),
+                            desc: (
+                              <ChevronDownIcon
+                                className="shrink-0 opacity-60"
+                                size={16}
+                                aria-hidden="true"
+                              />
+                            ),
+                          }[header.column.getIsSorted() as string] ?? null}
+                        </div>
+                      ) : (
+                        flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )
+                      )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id} className="last:py-0 p-3 h-12">
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No liquidations found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
