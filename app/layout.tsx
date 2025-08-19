@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
+import { ThemeProvider } from "next-themes";
+import Navbar from "@/app/components/Navbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,25 +26,33 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html suppressHydrationWarning lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-aurora`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-aurora `}
       >
-        <div className="min-h-dvh flex flex-col">
-          <main className="flex-1">{children}</main>
-          <footer className="border-t py-6 text-center text-[11px] text-muted-foreground">
-            Powered by{" "}
-            <a
-              href="https://envio.dev"
-              target="_blank"
-              rel="noreferrer noopener"
-              className="underline-offset-2 hover:underline"
-            >
-              envio.dev
-            </a>
-          </footer>
-        </div>
-        <Analytics />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <div className="min-h-dvh flex flex-col">
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <footer className="py-6 text-center text-[11px] text-muted-foreground">
+              Powered by{" "}
+              <a
+                href="https://envio.dev"
+                target="_blank"
+                rel="noreferrer noopener"
+                className="underline-offset-2 hover:underline"
+              >
+                envio.dev
+              </a>
+            </footer>
+          </div>
+          <Analytics />
+        </ThemeProvider>
       </body>
     </html>
   );
