@@ -1,6 +1,4 @@
-import Link from "next/link";
-import RecentLiquidations from "./components/RecentLiquidations";
-import DownloadCsv from "./components/DownloadCsv";
+import RecentLiquidations from "@/app/components/RecentLiquidations";
 
 export const dynamic = "force-dynamic";
 

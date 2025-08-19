@@ -4,7 +4,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export default function Component() {
+export default function Navbar() {
   return (
     <header className=" z-10 px-4 md:px-6">
       <div className="flex h-16 items-center justify-between max-w-4xl mx-auto gap-4">

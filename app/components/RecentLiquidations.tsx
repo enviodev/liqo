@@ -110,14 +110,14 @@ export default function RecentLiquidations({
     if (!protocolColumn) return [];
     const values = Array.from(protocolColumn.getFacetedUniqueValues().keys());
     return values.sort();
-  }, [table.getColumn("protocol")?.getFacetedUniqueValues()]);
+  }, [table]);
 
   // Get counts for each protocol
   const protocolCounts = useMemo(() => {
     const protocolColumn = table.getColumn("protocol");
     if (!protocolColumn) return new Map();
     return protocolColumn.getFacetedUniqueValues();
-  }, [table.getColumn("protocol")?.getFacetedUniqueValues()]);
+  }, [table]);
 
   // Get unique chain values
   const uniqueChainValues = useMemo(() => {
@@ -125,28 +125,21 @@ export default function RecentLiquidations({
     if (!chainColumn) return [];
     const values = Array.from(chainColumn.getFacetedUniqueValues().keys());
     return values.sort((a, b) => Number(a) - Number(b));
-  }, [table.getColumn("chainId")?.getFacetedUniqueValues()]);
+  }, [table]);
 
   // Get counts for each chain
   const chainCounts = useMemo(() => {
     const chainColumn = table.getColumn("chainId");
     if (!chainColumn) return new Map();
     return chainColumn.getFacetedUniqueValues();
-  }, [table.getColumn("chainId")?.getFacetedUniqueValues()]);
+  }, [table]);
 
-  const selectedProtocols = useMemo(() => {
-    const filterValue = table
-      .getColumn("protocol")
-      ?.getFilterValue() as string[];
-    return filterValue ?? [];
-  }, [table.getColumn("protocol")?.getFilterValue()]);
+  // These don't need useMemo since they're just getters that return current state
+  const selectedProtocols =
+    (table.getColumn("protocol")?.getFilterValue() as string[]) ?? [];
 
-  const selectedChains = useMemo(() => {
-    const filterValue = table
-      .getColumn("chainId")
-      ?.getFilterValue() as number[];
-    return filterValue ?? [];
-  }, [table.getColumn("chainId")?.getFilterValue()]);
+  const selectedChains =
+    (table.getColumn("chainId")?.getFilterValue() as number[]) ?? [];
 
   const handleProtocolChange = (checked: boolean, value: string) => {
     const filterValue = table

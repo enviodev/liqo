@@ -18,13 +18,19 @@ export interface NetworkIconProps {
   className?: string;
 }
 
+export interface IconComponentProps {
+  size?: number;
+  variant?: "branded" | "mono";
+  className?: string;
+}
+
 export interface NetworkConfig {
   chainId: number;
   name: string;
   networkName: string;
   color: string;
   explorerUrl: string;
-  iconComponent: React.ComponentType<any>;
+  iconComponent: React.ComponentType<IconComponentProps>;
 }
 
 export const NETWORK_CONFIGS: Record<number, NetworkConfig> = {

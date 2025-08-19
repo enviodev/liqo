@@ -79,7 +79,7 @@ export function useLiquidationsData({
       aborted = true;
       clearInterval(intervalId);
     };
-  }, [limit, pollMs, query, data]);
+  }, [limit, pollMs, query]);
 
   return { data };
 }
