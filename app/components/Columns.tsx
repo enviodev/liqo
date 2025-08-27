@@ -38,7 +38,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         {formatTime(row.getValue("timestamp"))}
       </div>
     ),
-    size: 200,
+    size: 180,
     enableHiding: false,
   },
   {
@@ -102,7 +102,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         <CopyButton text={row.getValue("borrower")} ariaLabel="Copy borrower" />
       </div>
     ),
-    size: 160,
+    size: 150,
     filterFn: multiColumnFilterFn,
   },
   {
@@ -131,7 +131,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         />
       </div>
     ),
-    size: 160,
+    size: 150,
   },
   {
     header: "Transaction",
@@ -156,7 +156,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         />
       </div>
     ),
-    size: 160,
+    size: 150,
   },
   {
     header: "Collateral",

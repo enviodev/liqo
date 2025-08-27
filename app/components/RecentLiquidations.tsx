@@ -199,7 +199,7 @@ export default function RecentLiquidations({
                 id={`${id}-input`}
                 ref={inputRef}
                 className={cn(
-                  "peer min-w-60 ps-9",
+                  "peer min-w-68 ps-9",
                   Boolean(table.getColumn("borrower")?.getFilterValue()) &&
                     "pe-9"
                 )}
@@ -210,7 +210,7 @@ export default function RecentLiquidations({
                 onChange={(e) =>
                   table.getColumn("borrower")?.setFilterValue(e.target.value)
                 }
-                placeholder="Filter by address, protocol, or tx hash..."
+                placeholder="Filter by address, hash, or protocol..."
                 type="text"
                 aria-label="Filter liquidations"
               />
