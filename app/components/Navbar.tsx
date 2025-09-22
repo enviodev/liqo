@@ -21,6 +21,12 @@ export default function Navbar() {
               <WavesIcon className="size-5" />
               Liqo
             </Link>
+            <Link
+              href="/leaderboard"
+              className={cn(buttonVariants({ variant: "ghost" }), "text-sm")}
+            >
+              Leaderboard
+            </Link>
           </div>
         </div>
 
