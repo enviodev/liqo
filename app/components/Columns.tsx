@@ -185,4 +185,31 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
     },
     size: 160,
   },
+  {
+    header: "Debt",
+    accessorKey: "debtAsset",
+    cell: ({ row }) => {
+      const debt = row.getValue("debtAsset") as string | null;
+      return debt ? (
+        <div className="flex items-center gap-2 min-w-0">
+          <a
+            href={getAddressUrl(row.getValue("chainId"), debt)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-mono group text-xs whitespace-nowrap  hover:underline"
+          >
+            {formatAddress(debt, 4)}
+            <ArrowUpRightIcon
+              aria-hidden="true"
+              className="group-hover:-translate-y-1 group-focus-visible:-translate-y-1 inline-block h-4 w-4 shrink-0 translate-y-px transition-transform group-hover:translate-x-1 group-focus-visible:translate-x-1 motion-reduce:transition-none"
+            />
+          </a>
+          <CopyButton text={debt} ariaLabel="Copy debt asset" />
+        </div>
+      ) : (
+        <span className="text-muted-foreground text-xs">-</span>
+      );
+    },
+    size: 160,
+  },
 ];

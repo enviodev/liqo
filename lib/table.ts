@@ -7,8 +7,14 @@ export const multiColumnFilterFn: FilterFn<GeneralizedLiquidation> = (
   columnId,
   filterValue
 ) => {
-  const searchableRowContent =
-    `${row.original.borrower} ${row.original.liquidator} ${row.original.protocol} ${row.original.txHash}`.toLowerCase();
+  const searchableRowContent = `
+    ${row.original.borrower}
+    ${row.original.liquidator}
+    ${row.original.protocol}
+    ${row.original.txHash}
+    ${row.original.collateralAsset || ''}
+    ${row.original.debtAsset || ''}
+  `.toLowerCase();
   const searchTerm = (filterValue ?? "").toLowerCase();
   return searchableRowContent.includes(searchTerm);
 };
