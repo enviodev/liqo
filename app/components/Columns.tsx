@@ -59,7 +59,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         </Badge>
       );
     },
-    size: 120,
+    size: 100,
     filterFn: chainFilterFn,
   },
   {
@@ -92,7 +92,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
           rel="noopener noreferrer"
           className="font-mono group text-xs whitespace-nowrap  hover:underline"
         >
-          {formatAddress(row.getValue("borrower"), 4)}
+          {formatAddress(row.getValue("borrower"), 3)}
           <ArrowUpRightIcon
             aria-hidden="true"
             className="group-hover:-translate-y-1 group-focus-visible:-translate-y-1 inline-block h-4 w-4 shrink-0 translate-y-px transition-transform group-hover:translate-x-1 group-focus-visible:translate-x-1 motion-reduce:transition-none"
@@ -102,7 +102,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         <CopyButton text={row.getValue("borrower")} ariaLabel="Copy borrower" />
       </div>
     ),
-    size: 150,
+    size: 140,
     filterFn: multiColumnFilterFn,
   },
   {
@@ -119,7 +119,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
           rel="noopener noreferrer"
           className="font-mono group text-xs whitespace-nowrap  hover:underline"
         >
-          {formatAddress(row.getValue("liquidator"), 4)}
+          {formatAddress(row.getValue("liquidator"), 3)}
           <ArrowUpRightIcon
             aria-hidden="true"
             className="group-hover:-translate-y-1 group-focus-visible:-translate-y-1 inline-block h-4 w-4 shrink-0 translate-y-px transition-transform group-hover:translate-x-1 group-focus-visible:translate-x-1 motion-reduce:transition-none"
@@ -131,7 +131,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         />
       </div>
     ),
-    size: 150,
+    size: 140,
   },
   {
     header: "Transaction",
@@ -144,7 +144,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
           rel="noopener noreferrer"
           className="font-mono group text-xs whitespace-nowrap  hover:underline"
         >
-          {formatAddress(row.getValue("txHash"), 4)}
+          {formatAddress(row.getValue("txHash"), 3)}
           <ArrowUpRightIcon
             aria-hidden="true"
             className="group-hover:-translate-y-1 group-focus-visible:-translate-y-1 inline-block h-4 w-4 shrink-0 translate-y-px transition-transform group-hover:translate-x-1 group-focus-visible:translate-x-1 motion-reduce:transition-none"
@@ -156,7 +156,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         />
       </div>
     ),
-    size: 150,
+    size: 140,
   },
   {
     header: "Collateral",
@@ -165,25 +165,13 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
       const collateral = row.getValue("collateralAsset") as string | null;
       return collateral ? (
         <div className="flex items-center gap-2 min-w-0">
-          <a
-            href={getAddressUrl(row.getValue("chainId"), collateral)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono group text-xs whitespace-nowrap  hover:underline"
-          >
-            {formatAddress(collateral, 4)}
-            <ArrowUpRightIcon
-              aria-hidden="true"
-              className="group-hover:-translate-y-1 group-focus-visible:-translate-y-1 inline-block h-4 w-4 shrink-0 translate-y-px transition-transform group-hover:translate-x-1 group-focus-visible:translate-x-1 motion-reduce:transition-none"
-            />
-          </a>
-          <CopyButton text={collateral} ariaLabel="Copy collateral asset" />
+            {collateral}
         </div>
       ) : (
         <span className="text-muted-foreground text-xs">-</span>
       );
     },
-    size: 160,
+    size: 100,
   },
   {
     header: "Debt",
@@ -192,24 +180,12 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
       const debt = row.getValue("debtAsset") as string | null;
       return debt ? (
         <div className="flex items-center gap-2 min-w-0">
-          <a
-            href={getAddressUrl(row.getValue("chainId"), debt)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-mono group text-xs whitespace-nowrap  hover:underline"
-          >
-            {formatAddress(debt, 4)}
-            <ArrowUpRightIcon
-              aria-hidden="true"
-              className="group-hover:-translate-y-1 group-focus-visible:-translate-y-1 inline-block h-4 w-4 shrink-0 translate-y-px transition-transform group-hover:translate-x-1 group-focus-visible:translate-x-1 motion-reduce:transition-none"
-            />
-          </a>
-          <CopyButton text={debt} ariaLabel="Copy debt asset" />
+            {debt}
         </div>
       ) : (
         <span className="text-muted-foreground text-xs">-</span>
       );
     },
-    size: 160,
+    size: 100,
   },
 ];
