@@ -210,7 +210,7 @@ export default function RecentLiquidations({
                 onChange={(e) =>
                   table.getColumn("borrower")?.setFilterValue(e.target.value)
                 }
-                placeholder="Filter by address, hash, or protocol..."
+                placeholder="Filter by address, hash, protocol, or asset..."
                 type="text"
                 aria-label="Filter liquidations"
               />
