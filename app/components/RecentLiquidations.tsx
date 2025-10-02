@@ -192,7 +192,7 @@ export default function RecentLiquidations({
       {/* Filters */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex justify-between w-full">
-          {/* Filter by address, protocol, or tx hash */}
+        {/* Filter by address, protocol, tx hash, or asset */}
           <div className="flex items-center gap-3">
             <div className="relative">
               <Input
