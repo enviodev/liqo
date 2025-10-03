@@ -15,3 +15,8 @@ export function formatTime(ts: string) {
   if (!Number.isFinite(n)) return ts;
   return new Date(n * 1000).toLocaleString();
 }
+
+export function formatToken(token?: string | null, maxLength: number = 6) {
+  if (!token) return "-";
+  return token.length > maxLength ? token.slice(0, maxLength) + "..." : token;
+}

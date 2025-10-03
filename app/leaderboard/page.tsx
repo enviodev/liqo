@@ -11,7 +11,7 @@ import {
   getNetworkIcon,
 } from "@/lib/network";
 
-type LiquidatorData = {
+type LiquidatorRow = {
   id: string;
   liquidator: string;
   chainId?: number | null;
@@ -19,7 +19,6 @@ type LiquidatorData = {
   eulerLiquidations: string;
   morphoLiquidations: string;
   totalLiquidations: string;
-  liquidations: string[];
   firstLiquidationTimestamp?: string | null;
   lastLiquidationTimestamp?: string | null;
 };
@@ -29,10 +28,10 @@ const GRAPHQL_ENDPOINT =
   process.env.NEXT_PUBLIC_GRAPHQL_ENDPOINT ||
   "http://localhost:8080/v1/graphql";
 
-async function fetchLeaderboard(limit: number): Promise<LiquidatorData[]> {
+async function fetchLeaderboard(limit: number): Promise<LiquidatorRow[]> {
   const query = `
     query Leaderboard($limit: Int!) {
-      LiquidatorData(order_by: { totalLiquidations: desc }, limit: $limit) {
+      Liquidator(order_by: { totalLiquidations: desc }, limit: $limit) {
         id
         liquidator
         chainId
@@ -40,7 +39,6 @@ async function fetchLeaderboard(limit: number): Promise<LiquidatorData[]> {
         eulerLiquidations
         morphoLiquidations
         totalLiquidations
-        liquidations
         firstLiquidationTimestamp
         lastLiquidationTimestamp
       }
@@ -55,7 +53,7 @@ async function fetchLeaderboard(limit: number): Promise<LiquidatorData[]> {
     });
     if (!res.ok) return [];
     const json = await res.json();
-    return json.data?.LiquidatorData ?? [];
+    return json.data?.Liquidator ?? [];
   } catch {
     return [];
   }

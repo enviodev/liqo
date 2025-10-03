@@ -17,7 +17,7 @@ import { GeneralizedLiquidation } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpRightIcon, CalendarIcon } from "lucide-react";
 import CopyButton from "./CopyButton";
-import { cn, formatAddress, formatTime } from "@/lib/utils";
+import { cn, formatAddress, formatTime, formatToken } from "@/lib/utils";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -165,7 +165,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
       const collateral = row.getValue("collateralAsset") as string | null;
       return collateral ? (
         <div className="flex items-center gap-2 min-w-0">
-            {collateral}
+          {formatToken(collateral, 6)}
         </div>
       ) : (
         <span className="text-muted-foreground text-xs">-</span>
@@ -180,7 +180,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
       const debt = row.getValue("debtAsset") as string | null;
       return debt ? (
         <div className="flex items-center gap-2 min-w-0">
-            {debt}
+          {formatToken(debt, 6)}
         </div>
       ) : (
         <span className="text-muted-foreground text-xs">-</span>
