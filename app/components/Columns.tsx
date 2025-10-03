@@ -15,9 +15,15 @@ import {
 } from "@/lib/table";
 import { GeneralizedLiquidation } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpRightIcon, CalendarIcon } from "lucide-react";
+import { ArrowUpRightIcon } from "lucide-react";
 import CopyButton from "./CopyButton";
-import { cn, formatAddress, formatTime, formatToken } from "@/lib/utils";
+import {
+  cn,
+  formatAddress,
+  formatTimeCompact,
+  formatToken,
+  formatUSD,
+} from "@/lib/utils";
 
 // This type is used to define the shape of our data.
 // You can use a Zod schema here if you want.
@@ -33,12 +39,11 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
     header: "Date",
     accessorKey: "timestamp",
     cell: ({ row }) => (
-      <div className="text-xs gap-1 inline-flex items-center font-mono text-muted-foreground whitespace-nowrap">
-        <CalendarIcon className="size-4" />
-        {formatTime(row.getValue("timestamp"))}
+      <div className="text-xs font-mono text-muted-foreground whitespace-nowrap">
+        {formatTimeCompact(row.getValue("timestamp"))}
       </div>
     ),
-    size: 180,
+    size: 85,
     enableHiding: false,
   },
   {
@@ -59,7 +64,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         </Badge>
       );
     },
-    size: 100,
+    size: 90,
     filterFn: chainFilterFn,
   },
   {
@@ -75,7 +80,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         </Badge>
       );
     },
-    size: 100,
+    size: 85,
     filterFn: protocolFilterFn,
   },
   {
@@ -102,7 +107,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         <CopyButton text={row.getValue("borrower")} ariaLabel="Copy borrower" />
       </div>
     ),
-    size: 140,
+    size: 120,
     filterFn: multiColumnFilterFn,
   },
   {
@@ -131,7 +136,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         />
       </div>
     ),
-    size: 140,
+    size: 120,
   },
   {
     header: "Transaction",
@@ -156,36 +161,50 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
         />
       </div>
     ),
-    size: 140,
+    size: 120,
   },
   {
     header: "Collateral",
     accessorKey: "collateralAsset",
     cell: ({ row }) => {
       const collateral = row.getValue("collateralAsset") as string | null;
+      const usd = (row.original as any).seizedAssetsUSD as
+        | number
+        | null
+        | undefined;
       return collateral ? (
         <div className="flex items-center gap-2 min-w-0">
           {formatToken(collateral, 6)}
+          <span className="text-muted-foreground text-xs">
+            ({formatUSD(usd, 2)})
+          </span>
         </div>
       ) : (
         <span className="text-muted-foreground text-xs">-</span>
       );
     },
-    size: 100,
+    size: 130,
   },
   {
     header: "Debt",
     accessorKey: "debtAsset",
     cell: ({ row }) => {
       const debt = row.getValue("debtAsset") as string | null;
+      const usd = (row.original as any).repaidAssetsUSD as
+        | number
+        | null
+        | undefined;
       return debt ? (
         <div className="flex items-center gap-2 min-w-0">
           {formatToken(debt, 6)}
+          <span className="text-muted-foreground text-xs">
+            ({formatUSD(usd, 2)})
+          </span>
         </div>
       ) : (
         <span className="text-muted-foreground text-xs">-</span>
       );
     },
-    size: 100,
+    size: 130,
   },
 ];

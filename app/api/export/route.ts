@@ -126,9 +126,9 @@ export async function GET(req: NextRequest) {
       collateralAsset: x.collateralAsset ?? null,
       debtAsset: x.debtAsset ?? null,
       repaidAssets: x.repaidAssets ?? null,
-      repaidAssetsUSD: x.repaidAssetsUSD ?? null,
+      repaidAssetsUSD: x.repaidAssetsUSD ? parseFloat(x.repaidAssetsUSD) : null,
       seizedAssets: x.seizedAssets ?? null,
-      seizedAssetsUSD: x.seizedAssetsUSD ?? null,
+      seizedAssetsUSD: x.seizedAssetsUSD ? parseFloat(x.seizedAssetsUSD) : null,
     }));
     const csv = toCsv(rows);
 
