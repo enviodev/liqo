@@ -28,6 +28,8 @@ type GeneralizedLiquidation = {
   debtAsset?: string | null;
   repaidAssets?: string | null;
   seizedAssets?: string | null;
+  repaidAssetsUSD?: number | null;
+  seizedAssetsUSD?: number | null;
 };
 
 function csvEscape(value: unknown): string {
@@ -48,7 +50,9 @@ function toCsv(rows: GeneralizedLiquidation[]): string {
     "collateralAsset",
     "debtAsset",
     "repaidAssets",
+    "repaidAssetsUSD",
     "seizedAssets",
+    "seizedAssetsUSD",
     "chainId",
   ].join(",");
 
@@ -62,7 +66,9 @@ function toCsv(rows: GeneralizedLiquidation[]): string {
       x.collateralAsset ?? "",
       x.debtAsset ?? "",
       x.repaidAssets ?? "",
+      x.repaidAssetsUSD ?? "",
       x.seizedAssets ?? "",
+      x.seizedAssetsUSD ?? "",
       x.chainId,
     ]
       .map(csvEscape)
@@ -146,13 +152,15 @@ export async function GET(req: NextRequest) {
           chainId
           timestamp
           protocol
-          borrower
-          liquidator
+          borrower { borrower }
+          liquidator { liquidator }
           txHash
           collateralAsset
           debtAsset
           repaidAssets
+          repaidAssetsUSD
           seizedAssets
+          seizedAssetsUSD
         }
       }
     `;
@@ -172,8 +180,22 @@ export async function GET(req: NextRequest) {
     }
 
     const json = await upstream.json();
-    const rows: GeneralizedLiquidation[] =
-      json.data?.GeneralizedLiquidation ?? [];
+    const raw = (json.data?.GeneralizedLiquidation ?? []) as any[];
+    const rows: GeneralizedLiquidation[] = raw.map((x) => ({
+      id: x.id,
+      chainId: x.chainId,
+      timestamp: String(x.timestamp),
+      protocol: x.protocol,
+      borrower: x?.borrower?.borrower ?? "",
+      liquidator: x?.liquidator?.liquidator ?? "",
+      txHash: x.txHash,
+      collateralAsset: x.collateralAsset ?? null,
+      debtAsset: x.debtAsset ?? null,
+      repaidAssets: x.repaidAssets ?? null,
+      repaidAssetsUSD: x.repaidAssetsUSD ?? null,
+      seizedAssets: x.seizedAssets ?? null,
+      seizedAssetsUSD: x.seizedAssetsUSD ?? null,
+    }));
     const csv = toCsv(rows);
 
     return new NextResponse(csv, {

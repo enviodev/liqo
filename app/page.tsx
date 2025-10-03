@@ -14,6 +14,8 @@ type GeneralizedLiquidation = {
   debtAsset?: string | null;
   repaidAssets?: string | null;
   seizedAssets?: string | null;
+  repaidAssetsUSD?: number | null;
+  seizedAssetsUSD?: number | null;
 };
 
 type LiquidationStats = {
@@ -41,13 +43,15 @@ async function fetchRecentLiquidations(
         chainId
         timestamp
         protocol
-        borrower
-        liquidator
+        borrower { borrower }
+        liquidator { liquidator }
         txHash
         collateralAsset
         debtAsset
         repaidAssets
+        repaidAssetsUSD
         seizedAssets
+        seizedAssetsUSD
       }
     }
   `;
@@ -60,7 +64,23 @@ async function fetchRecentLiquidations(
     });
     if (!res.ok) return [];
     const json = await res.json();
-    return json.data?.GeneralizedLiquidation ?? [];
+    const raw = (json.data?.GeneralizedLiquidation ?? []) as any[];
+    const flattened: GeneralizedLiquidation[] = raw.map((x) => ({
+      id: x.id,
+      chainId: x.chainId,
+      timestamp: String(x.timestamp),
+      protocol: x.protocol,
+      borrower: x?.borrower?.borrower ?? "",
+      liquidator: x?.liquidator?.liquidator ?? "",
+      txHash: x.txHash,
+      collateralAsset: x.collateralAsset ?? null,
+      debtAsset: x.debtAsset ?? null,
+      repaidAssets: x.repaidAssets ?? null,
+      repaidAssetsUSD: x.repaidAssetsUSD ?? null,
+      seizedAssets: x.seizedAssets ?? null,
+      seizedAssetsUSD: x.seizedAssetsUSD ?? null,
+    }));
+    return flattened;
   } catch {
     return [];
   }

@@ -26,13 +26,15 @@ export function useLiquidationsData({
         chainId
         timestamp
         protocol
-        borrower
-        liquidator
+        borrower { borrower }
+        liquidator { liquidator }
         txHash
         collateralAsset
         debtAsset
         repaidAssets
+        repaidAssetsUSD
         seizedAssets
+        seizedAssetsUSD
       }
     }
   `,
@@ -55,8 +57,22 @@ export function useLiquidationsData({
         });
         if (!res.ok) return;
         const json = await res.json();
-        const latest: GeneralizedLiquidation[] =
-          json.data?.GeneralizedLiquidation ?? [];
+        const raw = (json.data?.GeneralizedLiquidation ?? []) as any[];
+        const latest: GeneralizedLiquidation[] = raw.map((x) => ({
+          id: x.id,
+          chainId: x.chainId,
+          timestamp: String(x.timestamp),
+          protocol: x.protocol,
+          borrower: x?.borrower?.borrower ?? "",
+          liquidator: x?.liquidator?.liquidator ?? "",
+          txHash: x.txHash,
+          collateralAsset: x.collateralAsset ?? null,
+          debtAsset: x.debtAsset ?? null,
+          repaidAssets: x.repaidAssets ?? null,
+          repaidAssetsUSD: x.repaidAssetsUSD ?? null,
+          seizedAssets: x.seizedAssets ?? null,
+          seizedAssetsUSD: x.seizedAssetsUSD ?? null,
+        }));
 
         if (aborted) return;
         // Update if anything changed (compare first id/length)

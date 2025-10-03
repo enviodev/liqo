@@ -10,4 +10,6 @@ export type GeneralizedLiquidation = {
   debtAsset?: string | null;
   repaidAssets?: string | null;
   seizedAssets?: string | null;
+  repaidAssetsUSD?: number | null;
+  seizedAssetsUSD?: number | null;
 };
