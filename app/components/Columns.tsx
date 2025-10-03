@@ -168,10 +168,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
     accessorKey: "collateralAsset",
     cell: ({ row }) => {
       const collateral = row.getValue("collateralAsset") as string | null;
-      const usd = (row.original as any).seizedAssetsUSD as
-        | number
-        | null
-        | undefined;
+      const usd = row.original.seizedAssetsUSD;
       return collateral ? (
         <div className="flex items-center gap-2 min-w-0">
           {formatToken(collateral, 6)}
@@ -190,10 +187,7 @@ export const columns: ColumnDef<GeneralizedLiquidation>[] = [
     accessorKey: "debtAsset",
     cell: ({ row }) => {
       const debt = row.getValue("debtAsset") as string | null;
-      const usd = (row.original as any).repaidAssetsUSD as
-        | number
-        | null
-        | undefined;
+      const usd = row.original.repaidAssetsUSD;
       return debt ? (
         <div className="flex items-center gap-2 min-w-0">
           {formatToken(debt, 6)}

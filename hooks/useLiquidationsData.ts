@@ -57,26 +57,33 @@ export function useLiquidationsData({
         });
         if (!res.ok) return;
         const json = await res.json();
-        const raw = (json.data?.GeneralizedLiquidation ?? []) as any[];
-        const latest: GeneralizedLiquidation[] = raw.map((x) => ({
-          id: x.id,
-          chainId: x.chainId,
-          timestamp: String(x.timestamp),
-          protocol: x.protocol,
-          borrower: x?.borrower?.borrower ?? "",
-          liquidator: x?.liquidator?.liquidator ?? "",
-          txHash: x.txHash,
-          collateralAsset: x.collateralAsset ?? null,
-          debtAsset: x.debtAsset ?? null,
-          repaidAssets: x.repaidAssets ?? null,
-          repaidAssetsUSD: x.repaidAssetsUSD
-            ? parseFloat(x.repaidAssetsUSD)
-            : null,
-          seizedAssets: x.seizedAssets ?? null,
-          seizedAssetsUSD: x.seizedAssetsUSD
-            ? parseFloat(x.seizedAssetsUSD)
-            : null,
-        }));
+        const raw = (json.data?.GeneralizedLiquidation ?? []) as unknown[];
+        const latest: GeneralizedLiquidation[] = raw.map((x: unknown) => {
+          const item = x as Record<string, unknown>;
+          return {
+            id: item.id as string,
+            chainId: item.chainId as number,
+            timestamp: String(item.timestamp),
+            protocol: item.protocol as string,
+            borrower:
+              ((item?.borrower as Record<string, unknown>)
+                ?.borrower as string) ?? "",
+            liquidator:
+              ((item?.liquidator as Record<string, unknown>)
+                ?.liquidator as string) ?? "",
+            txHash: item.txHash as string,
+            collateralAsset: (item.collateralAsset as string) ?? null,
+            debtAsset: (item.debtAsset as string) ?? null,
+            repaidAssets: (item.repaidAssets as string) ?? null,
+            repaidAssetsUSD: item.repaidAssetsUSD
+              ? parseFloat(item.repaidAssetsUSD as string)
+              : null,
+            seizedAssets: (item.seizedAssets as string) ?? null,
+            seizedAssetsUSD: item.seizedAssetsUSD
+              ? parseFloat(item.seizedAssetsUSD as string)
+              : null,
+          };
+        });
 
         if (aborted) return;
         // Update if anything changed (compare first id/length)
