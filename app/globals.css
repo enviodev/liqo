@@ -149,3 +149,41 @@
   background-repeat: no-repeat;
   background-attachment: fixed;
 }
+
+/* Envio glow effect with aurora colors */
+:root {
+  --envio-glow-1: oklch(0.65 0.2 240); /* vibrant sky blue */
+  --envio-glow-2: oklch(0.62 0.22 320); /* vibrant lilac */
+  --envio-glow-3: oklch(0.68 0.24 85); /* vibrant peach */
+}
+
+.dark {
+  --envio-glow-1: oklch(0.76 0.2 240); /* lighter sky blue for dark */
+  --envio-glow-2: oklch(0.72 0.16 320); /* lighter lilac for dark */
+  --envio-glow-3: oklch(0.8 0.2 85); /* lighter peach for dark */
+}
+
+@keyframes gradient-shift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.envio-glow {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    var(--envio-glow-1) 0%,
+    var(--envio-glow-2) 50%,
+    var(--envio-glow-3) 100%
+  );
+  background-size: 200% 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 8s ease infinite;
+}

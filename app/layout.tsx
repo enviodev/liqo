@@ -39,17 +39,6 @@ export default function RootLayout({
           <div className="min-h-dvh flex flex-col">
             <Navbar />
             <main className="flex-1">{children}</main>
-            <footer className="py-6 text-center text-[11px] text-muted-foreground">
-              Powered by{" "}
-              <a
-                href="https://envio.dev"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="underline-offset-2 hover:underline"
-              >
-                envio.dev
-              </a>
-            </footer>
           </div>
           <Analytics />
         </ThemeProvider>

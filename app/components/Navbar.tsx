@@ -30,7 +30,15 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <a
+            href="https://envio.dev"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-xs font-medium hover:scale-105 transition-transform duration-300 envio-glow"
+          >
+            powered by envio
+          </a>
           <ThemeToggle />
         </div>
       </div>
